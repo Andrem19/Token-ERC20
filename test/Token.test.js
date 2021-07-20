@@ -1,7 +1,7 @@
 //ERC-20 Token Standard
-import { tokens } from './helpers'
+import { tokens, INVALID_ADDRESS } from './helpers'
 const Token = artifacts.require('./Token')
-require('chai')
+require('chai') //?
 	.use(require('chai-as-promised'))
 	.should()
 
@@ -24,7 +24,7 @@ contract('Token', (accounts) => {
 
 		it('tracks the symbol', async () => {
 			const res = await token.symbol()
-			res.should.equal(symb)
+			res.should.equal(symb) //res?
 		})
 
 		it('tracks the decimals', async () => {
@@ -71,7 +71,7 @@ contract('Token', (accounts) => {
                 //console.log(result)
                 //console.log(result.logs)
                 const log = result.logs[0]
-                log.event.should.eq('Transfer')
+                log.event.should.equal('Transfer')
                 const event = log.args
                 event.from.toString().should.equal(deployer, 'from is correct')
                 event.to.toString().should.equal(receiver, 'to is correct')
@@ -79,6 +79,19 @@ contract('Token', (accounts) => {
             })
 	    })
 
-	  })
+	    describe('failure', () => {
+	        it('rejects invalid recipients', async () => {
+                amount = tokens(100)
+                let invalidRecipient = 0x0//in hexadecimals
+                await token.transfer(invalidRecipient, amount, { from: deployer}).should.be.rejectedWith(INVALID_ADDRESS)
+	        })
+	        it('deployers balance to low', async () => {
+	        amount = tokens(10000000)
+	        await token.transfer(receiver, amount, { from: deployer}).should.be.rejectedWith()
+	        })
+console.log(result)
+
+	    })
+	})
 
 })
