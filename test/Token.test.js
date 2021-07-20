@@ -43,30 +43,41 @@ contract('Token', (accounts) => {
 		})
 	})
 
-	describe('deployment', () => {
+	describe('send tokens', () => {
+	    let balanceOf, amount, result
+	    let deployer = accounts[0]
+	    let receiver = accounts[1]
+
+	    beforeEach(async () => {
+	        amount = tokens(100)
+	        result = await token.transfer(receiver, amount, { from: deployer})
+	    })
+
 	    it('transfers token balances', async () => {
-	        let balanceOf
-	        let deployer = accounts[0]
-	        let receiver = accounts[1]
-
+	        //After transfer
 	        balanceOf = await token.balanceOf(deployer)
-	        console.log("deployer balance before transfer", balanceOf.toString())
-
-	        balanceOf = await token.balanceOf(receiver)
-	        console.log("receiver balance before transfer", balanceOf.toString())
-
-            //Transfer
-            await token.transfer(receiver, tokens(100), { from: deployer})//function metadata
-            //After transfer
-            balanceOf = await token.balanceOf(deployer)
-	        console.log("deployer balance after transfer", balanceOf.toString())
 	        balanceOf.toString().should.equal(tokens(999900).toString())
 
 	        balanceOf = await token.balanceOf(receiver)
-	        console.log("receiver balance after transfer", balanceOf.toString())
 	        balanceOf.toString().should.equal(tokens(100).toString())
-
-
 	    })
+
+	    it('emits a transfer event', async () => {
+            //console.log(result)
+	        //console.log(result.logs)
+
+	        const log = result.logs[0]
+
+            log.event.should.equal('Transfer')
+
+            const event = log.args;
+
+            event.from.toString().should.equal(deployer, 'from is correct')
+            event.to.toString().should.equal(receiver, 'to is correct')
+            event.value.toString().should.equal(amount.toString(), ' value is correct')
+	    })
+
+
 	})
+
 })
