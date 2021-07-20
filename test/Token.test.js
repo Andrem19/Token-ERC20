@@ -44,40 +44,41 @@ contract('Token', (accounts) => {
 	})
 
 	describe('send tokens', () => {
-	    let balanceOf, amount, result
+	    let amount, result
 	    let deployer = accounts[0]
 	    let receiver = accounts[1]
 
-	    beforeEach(async () => {
-	        amount = tokens(100)
-	        result = await token.transfer(receiver, amount, { from: deployer})
+	    describe('success', () => {
+	        beforeEach(async () => {
+                amount = tokens(100)
+                result = await token.transfer(receiver, amount, { from: deployer})
+            })
+
+            it('transfers token balances', async () => {
+                let balanceOf
+
+
+                //After transfer
+                balanceOf = await token.balanceOf(deployer)
+                balanceOf.toString().should.equal(tokens(999900).toString())
+                balanceOf = await token.balanceOf(receiver)
+                balanceOf.toString().should.equal(tokens(100).toString())
+
+
+            })
+
+            it('emits a transfer event', async () => {
+                //console.log(result)
+                //console.log(result.logs)
+                const log = result.logs[0]
+                log.event.should.eq('Transfer')
+                const event = log.args
+                event.from.toString().should.equal(deployer, 'from is correct')
+                event.to.toString().should.equal(receiver, 'to is correct')
+                event.value.toString().should.equal(amount.toString(), 'value is correct')
+            })
 	    })
 
-	    it('transfers token balances', async () => {
-	        //After transfer
-	        balanceOf = await token.balanceOf(deployer)
-	        balanceOf.toString().should.equal(tokens(999900).toString())
-
-	        balanceOf = await token.balanceOf(receiver)
-	        balanceOf.toString().should.equal(tokens(100).toString())
-	    })
-
-	    it('emits a transfer event', async () => {
-            //console.log(result)
-	        //console.log(result.logs)
-
-	        const log = result.logs[0]
-
-            log.event.should.equal('Transfer')
-
-            const event = log.args;
-
-            event.from.toString().should.equal(deployer, 'from is correct')
-            event.to.toString().should.equal(receiver, 'to is correct')
-            event.value.toString().should.equal(amount.toString(), ' value is correct')
-	    })
-
-
-	})
+	  })
 
 })
