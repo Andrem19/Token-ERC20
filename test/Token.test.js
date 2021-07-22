@@ -1,7 +1,7 @@
 //ERC-20 Token Standard
-import { tokens, INVALID_ADDRESS } from './helpers'
+import { tokens, INVALID_ADDRESS, VM_EXCEPTION } from './helpers'
 const Token = artifacts.require('./Token')
-require('chai') //?
+require('chai')
 	.use(require('chai-as-promised'))
 	.should()
 
@@ -14,7 +14,7 @@ contract('Token', (accounts) => {
 	const totalSup = tokens(1000000).toString()//'1000000000000000000000000'
 
 	beforeEach(async () => {
-		token = await Token.new()
+		token = await Token.new();
 	})
 	describe('deployment', () => {
 		it('traks the name', async () => {
@@ -86,12 +86,16 @@ contract('Token', (accounts) => {
                 await token.transfer(invalidRecipient, amount, { from: deployer}).should.be.rejectedWith(INVALID_ADDRESS)
 	        })
 	        it('deployers balance to low', async () => {
-	        amount = tokens(10000000)
-	        await token.transfer(receiver, amount, { from: deployer}).should.be.rejectedWith()
+	            amount = tokens(10000000)
+	            await token.transfer(receiver, amount, { from: deployer}).should.be.rejectedWith(VM_EXCEPTION)
+
+                //Attempt to transfer tokens, when you have none
+                amount = tokens(10)//receiver has no tokens
+                await token.transfer(deployer, amount, { from: receiver}).should.be.rejectedWith(VM_EXCEPTION)
 	        })
-console.log(result)
 
 	    })
+
 	})
 
 })

@@ -5,3 +5,4 @@ export const tokens = (n) => {
 }
 export const INVALID_ADDRESS = 'invalid address (argument="address", value=0, code=INVALID_ARGUMENT, version=address/5.0.5) (argument="_to", value=0, code=INVALID_ARGUMENT, version=abi/5.0.7)'
 
+export const VM_EXCEPTION = 'Returned error: VM Exception while processing transaction: revert'
