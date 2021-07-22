@@ -40,8 +40,21 @@ contract Token {
   }
 
   //Approve tokens
+  function approve(address spender, uint256 value) public returns(bool success) {
+    require(spender != address(0));
+    allowance[msg.sender][spender] = value;
+    emit Approval(msg.sender, spender, value);
+    return true;
+  }
 
   //Transfer from
+  function transferFrom(address from, address to, uint256 value) public returns(bool success) {
+    require(value <= balanceOf[from]);
+    require(value <= allowance[from][msg.sender]);//less than approved amount
+    allowance[from][msg.sender] = allowance[from][msg.sender].sub(value);//resets the allowance
+    _transfer(from, to, value);
+    return true;
+  }
 
 }
 

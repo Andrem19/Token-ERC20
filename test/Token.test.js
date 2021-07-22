@@ -13,6 +13,10 @@ contract('Token', (accounts) => {
 	const decim = '18'
 	const totalSup = tokens(1000000).toString()//'1000000000000000000000000'
 
+	let deployer = accounts[0]
+	let receiver = accounts[1]
+	let exchange = accounts[2]
+
 	beforeEach(async () => {
 		token = await Token.new();
 	})
@@ -45,8 +49,6 @@ contract('Token', (accounts) => {
 
 	describe('send tokens', () => {
 	    let amount, result
-	    let deployer = accounts[0]
-	    let receiver = accounts[1]
 
 	    describe('success', () => {
 	        beforeEach(async () => {
@@ -95,6 +97,88 @@ contract('Token', (accounts) => {
 	        })
 
 	    })
+
+
+	})
+	describe('approving tokens', () => {
+	    let result, amount
+
+	    beforeEach(async () => {
+	        amount = tokens(100)
+	        result = await token.approve(exchange, amount, {from: deployer})
+	    })
+
+	    describe('success', () => {
+	        it('allocates an allowance for delegated token spending on exchange', async () => {
+	            const allowance = await token.allowance(deployer, exchange)
+	            allowance.toString().should.equal(amount.toString())
+	        })
+	        it('emits an approval event', async () => {
+                const log = result.logs[0]
+                log.event.should.equal('Approval')
+                const event = log.args
+                event.owner.toString().should.equal(deployer, 'owner is correct')
+                event.spender.toString().should.equal(exchange, 'spender is correct')
+                event.value.toString().should.equal(amount.toString(), 'value is correct')
+	        })
+	    })
+	    describe('failure', () => {
+            it('rejects invalid spender', async () => {
+                await token.approve(0x0, amount, {from: deployer}).should.be.rejected
+
+            })
+	    })
+
+	})
+
+	describe('delegated token transfers', () => {
+	    let amount, result
+
+	    beforeEach(async () => {
+	        amount = tokens(100)
+	        await token.approve(exchange, amount, { from: deployer })
+	    })
+
+	    describe('success', () => {
+            beforeEach(async () => {
+               result = await token.transferFrom(deployer, receiver, amount, {from: exchange})
+
+            })
+
+            it('transfers token balances', async () => {
+
+                let balanceOf = await token.balanceOf(deployer)
+                balanceOf.toString().should.equal(tokens(999900).toString())
+                balanceOf = await token.balanceOf(receiver)
+                balanceOf.toString().should.equal(tokens(100).toString())
+            })
+
+            it('resets the allowance', async () => {
+                const allowance = await token.allowance(deployer, exchange)
+                allowance.toString().should.equal('0')
+            })
+
+            it('emits a transfer event', async () => {
+                const log = result.logs[0]
+                log.event.should.equal('Transfer')
+                const event = log.args
+                event.from.toString().should.equal(deployer, 'from is correct')
+                event.to.toString().should.equal(receiver, 'to is correct')
+                event.value.toString().should.equal(amount.toString(), 'value is correct')
+            })
+
+	    })
+
+	    describe('failure', () => {
+            it('rejects insufficient amount', async () => {
+                amount = tokens(200)
+                token.transferFrom(deployer, receiver, amount, {from: exchange}).should.be.rejectedWith(VM_EXCEPTION)
+            })
+            it('rejects invalid recipients', async () => {
+               await token.transferFrom(deployer, 0x0, amount, {from: exchange}).should.be.rejected
+            })
+	    })
+
 
 	})
 
