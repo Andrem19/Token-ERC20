@@ -12,7 +12,7 @@ require('chai')
         let exchange, token
         const feePercent = 10
 
-        before(async () => {
+        beforeEach(async () => {
             //Deploy token
             token = await Token.new()
             //Transfer some tokens to user1
@@ -75,6 +75,3 @@ require('chai')
             })
         })
     })
-
-
-
