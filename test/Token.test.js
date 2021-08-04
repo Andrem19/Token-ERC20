@@ -178,8 +178,5 @@ contract('Token', (accounts) => {
                await token.transferFrom(deployer, 0x0, amount, {from: exchange}).should.be.rejected
             })
 	    })
-
-
 	})
-
 })
